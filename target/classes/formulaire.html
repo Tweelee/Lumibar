@@ -6,13 +6,28 @@
 </head>
 <body>
 <form method="post" action="http://localhost:8055/color/">
+<p>
+    <label>Id du groupe de diode : </label>
+    <input type="number" name="id" /><br/>
 
-    <input type="number" name="R" />
-    <input type="number" name="V" />
+    <label>Type de couleur: </label>
+    <select name="gradient">
+        <option value="true">Dégradé</option>
+        <option value="false">Couleur fixe</option>
+    </select><br/>
+
+    <label>Valeur de Rouge :</label>
+    <input type="number" name="R" /><br/>
+
+    <label>Valeur de Vert :</label>
+    <input type="number" name="V" /><br/>
+
+    <label>Valeur de Bleu :</label>
     <input type="number" name="B" />
     <input type="submit" />
 
-
+</p>
 </form>
+
 </body>
 </html>

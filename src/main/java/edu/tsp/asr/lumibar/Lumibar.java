@@ -1,24 +1,32 @@
 package edu.tsp.asr.lumibar;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-
-import gnu.io.CommPortIdentifier;
+import jssc.SerialPortList;
 
 import static spark.Spark.*;
+
 
 public class Lumibar {
 
 
-    public static void main(String arg[]) {
+    public static void main(String arg[]) throws InterruptedException {
 
 
-        String PORT_NAMES[] = {
-                "/dev/tty.usbserial-A9007UX1", // Mac OS X
-                "/dev/ttyACM0", // Raspberry Pi
-                "/dev/ttyUSB0", // Linux
-                "COM3", // Windows
-        };
+        int i = 0;
+
+        SerialCommJssc serial = new SerialCommJssc();
+
+        // debug ports
+        serial.listPorts();
+
+        // pour que le destinataire comprenne le sens des données recues
+        // on les envoie entre les messages start et end
+        // elles sont ensuite envoyées dans le même ordre
+        // id du groupe de diode
+        // boolean : dégradé ou couleur fixe
+        // valeur R
+        // valeur V
+        // valeur B
+
 
         port(8055);
         get("/", (req, res) -> "Hello");
@@ -31,45 +39,44 @@ public class Lumibar {
         // les valeurs de RGB sont envoyées comme queryParams
         // par exemple /color/?R=255&V=255&B=255
         post("/color/", (req, res) -> {
-            Couleur couleur;
+            String id = req.queryParams("id");
+            String gradient = req.queryParams("gradient");
             String rouge = req.queryParams("R");
             String vert = req.queryParams("V");
             String bleu = req.queryParams("B");
 
             if (rouge != null && bleu != null && vert != null) {
-                couleur = new Couleur(Integer.parseInt(rouge), Integer.parseInt(vert), Integer.parseInt(bleu));
-                return "nouvelle couleur : R : " + rouge + ", V : " + vert + ", B : " + bleu;
+                Couleur couleur;
+                couleur = new Couleur(Integer.parseInt(id),
+                        Boolean.valueOf(gradient),
+                        Integer.parseInt(rouge),
+                        Integer.parseInt(vert),
+                        Integer.parseInt(bleu));
+
+                serial.writeData("START");
+                serial.writeData(""+couleur.getId());
+                serial.writeData(""+couleur.isGradient());
+                serial.writeData(""+couleur.getRouge());
+                serial.writeData(""+couleur.getVert());
+                serial.writeData(""+couleur.getBleu());
+                serial.writeData("END");
+
+
+                return "id du groupe de diode: "+ id+
+                        "nouvelle couleur : R : " + rouge +
+                        ", V : " + vert +
+                        ", B : " + bleu +
+                        "en dégradé : " + gradient;
             } else {
-                couleur = new Couleur();
-                return "nouvelle couleur : blanc.";
+               return "nouvelle couleur : blanc.";
             }
 
         });
 
-       System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/tty/ACM0");
-
-        SerialArduino serialarduino = new SerialArduino();
-        serialarduino.initialize("/dev/tty/USB0");
-
-        char id = 10;
-        boolean isGradient = false;
-        char red = 255;
-        char green = 255;
-        char blue = 26;
-
-        System.out.println("START WRITE");
-        serialarduino.write("Start demand");
-        serialarduino.writeChar(id);
-        serialarduino.write(String.valueOf(isGradient));
-        serialarduino.writeChar(red);
-        serialarduino.writeChar(green);
-        serialarduino.writeChar(blue);
-        serialarduino.write("End demand");
-        System.out.println("END WRITE");
 
 
 
-
+        // TODO
         // Modifier la couleur en fonction de l'heure
         // envoi direct sur le port sériel
 
