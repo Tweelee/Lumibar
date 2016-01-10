@@ -6,13 +6,13 @@ package edu.tsp.asr.lumibar;
 public class Couleur {
 
     private int id;
-    private boolean gradient;
+    private int gradient;
     private int rouge;
     private int vert;
     private int bleu;
 
     public Couleur (){
-        this.gradient = false;
+        this.gradient = 0;
         this.rouge = 255;
         this.vert = 255;
         this.bleu = 255;
@@ -20,7 +20,7 @@ public class Couleur {
 
 
 
-    public Couleur(int id, boolean gradient, int rouge, int vert, int bleu){
+    public Couleur(int id, int gradient, int rouge, int vert, int bleu){
         this.id = id;
         this.gradient = gradient;
         this.rouge = rouge;
@@ -60,11 +60,11 @@ public class Couleur {
         this.id = id;
     }
 
-    public boolean isGradient() {
+    public int getGradient() {
         return gradient;
     }
 
-    public void setGradient(boolean gradient) {
+    public void setGradient(int gradient) {
         this.gradient = gradient;
     }
 }

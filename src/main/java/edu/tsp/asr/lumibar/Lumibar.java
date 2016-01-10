@@ -10,7 +10,8 @@ public class Lumibar {
 
     public static void main(String arg[]) throws InterruptedException {
 
-
+        char START_BYTE = 47;
+        char END_BYTE = 49;
         int i = 0;
 
         SerialCommJssc serial = new SerialCommJssc();
@@ -48,25 +49,26 @@ public class Lumibar {
             if (rouge != null && bleu != null && vert != null) {
                 Couleur couleur;
                 couleur = new Couleur(Integer.parseInt(id),
-                        Boolean.valueOf(gradient),
+                        Integer.parseInt(gradient),
                         Integer.parseInt(rouge),
                         Integer.parseInt(vert),
                         Integer.parseInt(bleu));
 
-                serial.writeData("START");
-                serial.writeData(""+couleur.getId());
-                serial.writeData(""+couleur.isGradient());
-                serial.writeData(""+couleur.getRouge());
-                serial.writeData(""+couleur.getVert());
-                serial.writeData(""+couleur.getBleu());
-                serial.writeData("END");
+                String message = String.valueOf(START_BYTE) +
+                        (char) couleur.getId() +
+                        (char) couleur.getGradient() +
+                        (char) couleur.getRouge() +
+                        (char) couleur.getVert() +
+                        (char) couleur.getBleu()
+                        + END_BYTE+ END_BYTE;
 
+                serial.writeData(message);
 
                 return "id du groupe de diode: "+ id+
                         "nouvelle couleur : R : " + rouge +
                         ", V : " + vert +
                         ", B : " + bleu +
-                        "en dégradé : " + gradient;
+                        "étapes dans le dégradé : " + gradient;
             } else {
                return "nouvelle couleur : blanc.";
             }
