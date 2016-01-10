@@ -43,9 +43,6 @@ public class Lumibar {
         port(8055);
         get("/", (req, res) -> "Hello");
 
-        Contexte contexte = new Contexte();
-        int heureCourante = contexte.getHeureCourante();
-
 
         // mettre à jour la couleur du plafond
         // les valeurs de RGB sont envoyées comme queryParams
@@ -109,6 +106,7 @@ public class Lumibar {
                 while (mode.compareToIgnoreCase("true")==0) {
 
                     nb = tweetEngine.searchTweets(query, word);
+                    System.out.println(nb);
 
                     // TODO
                     // coefficients de couleur à calibrer
@@ -141,9 +139,73 @@ public class Lumibar {
         });
 
 
-        // TODO
+        // TODO : changer la calibration des couleurs (et éventuellement les plages horaires)
         // Modifier la couleur en fonction de l'heure
         // envoi direct sur le port sériel
+
+        post("/time/", (req, res) -> {
+            String id = req.queryParams("id");
+            String gradient = req.queryParams("gradient");
+            String mode = req.queryParams("mode");
+                Contexte contexte = new Contexte();
+                while ( mode.compareToIgnoreCase("true") == 0 ){
+                  if(contexte.getHeureCourante() < 10 && contexte.getHeureCourante() > 6){
+                       String message = String.valueOf(START_BYTE) +
+                            (char) Integer.parseInt(id) +
+                            (char) Integer.parseInt(gradient) +
+                            (char) 0 +
+                            (char) 255 +
+                            (char) 255
+                            + END_BYTE + END_BYTE;
+
+                    serial.writeData(message);
+                      Thread.sleep(1800000);
+                  }
+                    else if ( contexte.getHeureCourante() > 10 && contexte.getHeureCourante() < 15 ){
+                      String message = String.valueOf(START_BYTE) +
+                              (char) Integer.parseInt(id) +
+                              (char) Integer.parseInt(gradient) +
+                              (char) 255 +
+                              (char) 255 +
+                              (char) 255
+                              + END_BYTE + END_BYTE;
+
+                      serial.writeData(message);
+                      Thread.sleep(1800000);
+
+                  }
+                    else if ( contexte.getHeureCourante() > 15 && contexte.getHeureCourante() < 19 ){
+                      String message = String.valueOf(START_BYTE) +
+                              (char) Integer.parseInt(id) +
+                              (char) Integer.parseInt(gradient) +
+                              (char) 255 +
+                              (char) 255 +
+                              (char) 0
+                              + END_BYTE + END_BYTE;
+
+                      serial.writeData(message);
+                      Thread.sleep(1800000);
+
+                  }
+                    else {
+                      String message = String.valueOf(START_BYTE) +
+                              (char) Integer.parseInt(id) +
+                              (char) Integer.parseInt(gradient) +
+                              (char) 255 +
+                              (char) 0 +
+                              (char) 0
+                              + END_BYTE + END_BYTE;
+
+                      serial.writeData(message);
+                      Thread.sleep(1800000);
+
+                  }
+
+                }
+
+                return "ok";
+
+        });
 
 
     }
