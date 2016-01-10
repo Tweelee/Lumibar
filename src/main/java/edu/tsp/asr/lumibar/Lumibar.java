@@ -229,6 +229,8 @@ public class Lumibar {
                                 (char) coef +
                                 (char) coef
                                 + END_BYTE + END_BYTE;
+                        serial.writeData(message);
+
                     }
 
             return "ok";
