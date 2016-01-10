@@ -84,6 +84,7 @@ public class Lumibar {
         });
 
 
+        // Mode Match
         // récupérer l'ambiance du match depuis les tweets
         // envoi des couleurs sur le port sériel
 
@@ -108,7 +109,7 @@ public class Lumibar {
                     nb = tweetEngine.searchTweets(query, word);
                     System.out.println(nb);
 
-                    // TODO
+                    // TODO :
                     // coefficients de couleur à calibrer
                     Couleur couleur = new Couleur(Integer.parseInt(id), 0, nb * 5, nb * 5, nb * 5);
 
@@ -206,6 +207,17 @@ public class Lumibar {
                 return "ok";
 
         });
+
+
+        // TODO : changer la couleur de la lumière en fonction du niveau sonore
+
+     //   serial.readData();
+      //  serial.readEventListener();
+        int j =0;
+      while (j<100 ){
+          String result = serial.readData(3);
+            System.out.println("Res : "+result);
+        }
 
 
     }
