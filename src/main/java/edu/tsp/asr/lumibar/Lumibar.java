@@ -209,16 +209,31 @@ public class Lumibar {
         });
 
 
-        // TODO : changer la couleur de la lumière en fonction du niveau sonore
+        //  changer la couleur de la lumière en fonction du niveau sonore
+        // TODO : calibrer les changements de couleurs.
 
-     //   serial.readData();
-      //  serial.readEventListener();
-        int j =0;
-      while (j<100 ){
-          String result = serial.readData(3);
-            System.out.println("Res : "+result);
-        }
 
+        post("/sound/", (req, res) -> {
+                    String id = req.queryParams("id");
+                    String gradient = req.queryParams("gradient");
+                    String mode = req.queryParams("mode");
+                    while (mode.compareToIgnoreCase("true") == 0) {
+                        String result = serial.readData(3);
+                        int coef = Integer.parseInt(result);
+                        // Debug
+                        System.out.println("Res : " + result);
+                        String message = String.valueOf(START_BYTE) +
+                                (char) Integer.parseInt(id) +
+                                (char) Integer.parseInt(gradient) +
+                                (char) coef +
+                                (char) coef +
+                                (char) coef
+                                + END_BYTE + END_BYTE;
+                    }
+
+            return "ok";
+                }
+            );
 
     }
 }
