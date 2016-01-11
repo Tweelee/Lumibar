@@ -1,10 +1,6 @@
 package edu.tsp.asr.lumibar;
 
-import jssc.SerialPortList;
 import twitter4j.Query;
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
-import twitter4j.conf.ConfigurationBuilder;
 
 import java.util.Scanner;
 
@@ -12,32 +8,27 @@ import static spark.Spark.*;
 
 
 public class Lumibar {
-
-
     public static void main(String arg[]) throws InterruptedException {
-
-        char START_BYTE = 47;
-        char END_BYTE = 49;
-        int i = 0;
+        SerialCommJssc serial = new SerialCommJssc();
+        ColorManager colorManager = new ColorManager(serial, 16);
 
         Scanner sc;
         String word;
         sc = new Scanner(System.in);
         System.out.println("Enter the word you want to count in the tweets during the match mode.");
         word = sc.nextLine();
-        SerialCommJssc serial = new SerialCommJssc();
 
         // debug ports
-        serial.listPorts();
+        colorManager.getSerial().listPorts();
 
         // pour que le destinataire comprenne le sens des données recues
         // on les envoie entre les messages start et end
         // elles sont ensuite envoyées dans le même ordre
-        // id du groupe de diode
-        // boolean : dégradé ou couleur fixe
-        // valeur R
-        // valeur V
-        // valeur B
+        // id du groupe de diode (0-255)
+        // nombre d'étapes dans le dégradé à appliquer pour aller à la couleur (0-255)
+        // valeur R (0-255)
+        // valeur G (0-255)
+        // valeur B (0-255)
 
 
         port(8055);
@@ -45,37 +36,24 @@ public class Lumibar {
 
 
         // mettre à jour la couleur du plafond
-        // les valeurs de RGB sont envoyées comme queryParams
-        // par exemple /color/?R=255&V=255&B=255
+        // les valeurs de RGB sont envoyées comme paramètres POST
         post("/color/", (req, res) -> {
-            String id = req.queryParams("id");
+            String stripId = req.queryParams("id");
             String gradient = req.queryParams("gradient");
-            String rouge = req.queryParams("R");
-            String vert = req.queryParams("V");
-            String bleu = req.queryParams("B");
+            String red = req.queryParams("R");
+            String green = req.queryParams("V");
+            String blue = req.queryParams("B");
 
-            if (rouge != null && bleu != null && vert != null) {
-                Couleur couleur;
-                couleur = new Couleur(Integer.parseInt(id),
-                        Integer.parseInt(gradient),
-                        Integer.parseInt(rouge),
-                        Integer.parseInt(vert),
-                        Integer.parseInt(bleu));
+            if (red != null && blue != null && green != null) {
+                Color color;
+                color = new Color(red, green, blue);
 
-                String message = String.valueOf(START_BYTE) +
-                        (char) couleur.getId() +
-                        (char) couleur.getGradient() +
-                        (char) couleur.getRouge() +
-                        (char) couleur.getVert() +
-                        (char) couleur.getBleu()
-                        + END_BYTE + END_BYTE;
+                colorManager.sendColor(stripId, gradient, color);
 
-                serial.writeData(message);
-
-                return "id du groupe de diode: " + id +
-                        "nouvelle couleur : R : " + rouge +
-                        ", V : " + vert +
-                        ", B : " + bleu +
+                return "id du groupe de diode: " + stripId +
+                        "nouvelle color : R : " + red +
+                        ", V : " + green +
+                        ", B : " + blue +
                         "étapes dans le dégradé : " + gradient;
             } else {
                 return "nouvelle couleur : blanc.";
@@ -110,18 +88,11 @@ public class Lumibar {
                     System.out.println(nb);
 
                     // TODO :
-                    // coefficients de couleur à calibrer
-                    Couleur couleur = new Couleur(Integer.parseInt(id), 0, nb * 5, nb * 5, nb * 5);
+                    // coefficients de color à calibrer
+                    Color color = new Color(nb * 5, nb * 5, nb * 5);
 
-                    String message = String.valueOf(START_BYTE) +
-                            (char) couleur.getId() +
-                            (char) couleur.getGradient() +
-                            (char) couleur.getRouge() +
-                            (char) couleur.getVert() +
-                            (char) couleur.getBleu()
-                            + END_BYTE + END_BYTE;
+                    colorManager.sendColorToAll(color);
 
-                    serial.writeData(message);
                     Thread.sleep(300000);
 
                 }
@@ -145,67 +116,26 @@ public class Lumibar {
         // envoi direct sur le port sériel
 
         post("/time/", (req, res) -> {
-            String id = req.queryParams("id");
-            String gradient = req.queryParams("gradient");
             String mode = req.queryParams("mode");
-                Contexte contexte = new Contexte();
-                while ( mode.compareToIgnoreCase("true") == 0 ){
-                  if(contexte.getHeureCourante() < 10 && contexte.getHeureCourante() > 6){
-                       String message = String.valueOf(START_BYTE) +
-                            (char) Integer.parseInt(id) +
-                            (char) Integer.parseInt(gradient) +
-                            (char) 0 +
-                            (char) 255 +
-                            (char) 255
-                            + END_BYTE + END_BYTE;
-
-                    serial.writeData(message);
-                      Thread.sleep(1800000);
-                  }
-                    else if ( contexte.getHeureCourante() > 10 && contexte.getHeureCourante() < 15 ){
-                      String message = String.valueOf(START_BYTE) +
-                              (char) Integer.parseInt(id) +
-                              (char) Integer.parseInt(gradient) +
-                              (char) 255 +
-                              (char) 255 +
-                              (char) 255
-                              + END_BYTE + END_BYTE;
-
-                      serial.writeData(message);
-                      Thread.sleep(1800000);
-
-                  }
-                    else if ( contexte.getHeureCourante() > 15 && contexte.getHeureCourante() < 19 ){
-                      String message = String.valueOf(START_BYTE) +
-                              (char) Integer.parseInt(id) +
-                              (char) Integer.parseInt(gradient) +
-                              (char) 255 +
-                              (char) 255 +
-                              (char) 0
-                              + END_BYTE + END_BYTE;
-
-                      serial.writeData(message);
-                      Thread.sleep(1800000);
-
-                  }
-                    else {
-                      String message = String.valueOf(START_BYTE) +
-                              (char) Integer.parseInt(id) +
-                              (char) Integer.parseInt(gradient) +
-                              (char) 255 +
-                              (char) 0 +
-                              (char) 0
-                              + END_BYTE + END_BYTE;
-
-                      serial.writeData(message);
-                      Thread.sleep(1800000);
-
-                  }
-
+            Contexte contexte = new Contexte();
+            while ( mode.compareToIgnoreCase("true") == 0 ){
+                if(contexte.getHeureCourante() < 11 && contexte.getHeureCourante() > 6) {
+                    colorManager.sendColorToAll(new Color(255,255,0), 255);
+                }
+                else if ( contexte.getHeureCourante() > 11 && contexte.getHeureCourante() < 15 ){
+                    colorManager.sendColorToAll(new Color(255,255,255), 255);
+                }
+                else if ( contexte.getHeureCourante() > 15 && contexte.getHeureCourante() < 19 ){
+                    colorManager.sendColorToAll(new Color(255,255,0), 255);
+                }
+                else {
+                    colorManager.sendColorToAll(new Color(255,0,0), 255);
                 }
 
-                return "ok";
+                Thread.sleep(1800000);
+            }
 
+            return "ok";
         });
 
 
@@ -219,23 +149,18 @@ public class Lumibar {
                     String mode = req.queryParams("mode");
                     while (mode.compareToIgnoreCase("true") == 0) {
                         String result = serial.readData(3);
-                        int coef = Integer.parseInt(result);
+                        int coeff = Integer.parseInt(result);
                         // Debug
                         System.out.println("Res : " + result);
-                        String message = String.valueOf(START_BYTE) +
-                                (char) Integer.parseInt(id) +
-                                (char) Integer.parseInt(gradient) +
-                                (char) coef +
-                                (char) coef +
-                                (char) coef
-                                + END_BYTE + END_BYTE;
-                        serial.writeData(message);
-
+                        colorManager.setGlobalCoeff(coeff);
                     }
 
-            return "ok";
+                    return "ok";
                 }
-            );
+        );
 
     }
+
+
+
 }
