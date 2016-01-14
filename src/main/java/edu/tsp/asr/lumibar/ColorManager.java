@@ -37,18 +37,20 @@ public class ColorManager {
     }
     */
 
+
     public void sendColor(int id, int gradient, Color color) {
-        int red = (int) (color.getRed() * globalCoeff);
-        int green = (int) (color.getGreen() *globalCoeff);
-        int blue = (int) (color.getBlue() *globalCoeff);
-        int groupId = id%2 == 0 ? 0 : 1;
-        int grad = gradient>0 ? 0 : 1;
-        int redH = red > 128 ? 0 : 1;
-        int redL = red % 128 > 64 ? 0 : 1;
-        int greenH = green > 128 ? 0 : 1;
-        int greenL = green % 128 > 64 ? 0 : 1;
-        int blueH = blue > 128 ? 0 : 1;
-        int blueL = blue % 128 > 64 ? 0 : 1;
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+        System.out.println("colors : ("+red+","+green+","+blue+")");
+        int groupId = id%2 == 1 ? 0 : 0;
+        int grad = gradient>0 ?  0: 0;
+        int redH = red >= 128 ? 1 : 0;
+        int redL = red % 128 >= 64 ? 1 : 0;
+        int greenH = green >= 128 ? 1 : 0;
+        int greenL = green % 128 >= 64 ? 1 : 0;
+        int blueH = blue >= 128 ? 1 : 0;
+        int blueL = blue % 128 >= 64 ? 1 : 0;
         int messageNum = ((groupId << 7)
                                         + (grad << 6)
                                         + (redH << 5)
@@ -58,6 +60,8 @@ public class ColorManager {
                                         + (blueH << 1)
                                         + (blueL));
         char message = (char) messageNum;
+        System.out.println("details : " + groupId + grad + redH + redL + greenH + greenL + blueH + blueL);
+        System.out.println("messageNum : " + messageNum);
         System.out.println("message : " + message);
         serial.writeData(String.valueOf(message));
 

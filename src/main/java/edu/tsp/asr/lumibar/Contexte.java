@@ -18,6 +18,7 @@ public class Contexte {
 
         this.calendrier = new GregorianCalendar();
         this.heureCourante = calendrier.get(Calendar.HOUR_OF_DAY);
+
         //  this.incendie = false;
 
     }

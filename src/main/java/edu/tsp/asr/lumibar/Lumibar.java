@@ -69,6 +69,7 @@ public class Lumibar {
 
         // choisir l'équipe à suivre
         post("/team/", (req, res) -> {
+            System.out.println("Start");
             String id = req.queryParams("id");
             String team = req.queryParams("team");
             String mode = req.queryParams("mode");
@@ -85,17 +86,18 @@ public class Lumibar {
                 while (mode.compareToIgnoreCase("true")==0) {
 
                     nb = tweetEngine.searchTweets(query, word);
-                    System.out.println(nb);
+                    System.out.println("num of tweets :" + nb);
 
                     // TODO :
                     // coefficients de color à calibrer
-                    Color color = new Color(nb * 5, nb * 5, nb * 5);
+                    Color color = new Color(nb * 64, nb * 64, nb * 64);
 
                     colorManager.sendColorToAll(color);
 
                     Thread.sleep(300000);
 
                 }
+                System.out.println("End of match");
 
                 return "ok";/*"Nombre d'occurences du mot but : " +nb +
                             "id du groupe de diode: "+ id+
@@ -106,8 +108,6 @@ public class Lumibar {
             } else {
                 return "erreur.";
             }
-
-
         });
 
 
@@ -149,10 +149,14 @@ public class Lumibar {
                     String mode = req.queryParams("mode");
                     while (mode.compareToIgnoreCase("true") == 0) {
                         String result = serial.readData(3);
-                        int coeff = Integer.parseInt(result);
+                        int coeff = Integer.parseInt(result)/2;
+                        if(coeff > 255) {
+                            coeff = 255;
+                        }
                         // Debug
-                        System.out.println("Res : " + result);
-                        colorManager.setGlobalCoeff(coeff);
+                        System.out.println("Res : " + result + " - coeff : " + coeff);
+                        Color c = new Color(coeff, coeff, coeff);
+                        colorManager.sendColor(0,0,c);
                     }
 
                     return "ok";

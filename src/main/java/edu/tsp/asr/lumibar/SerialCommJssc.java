@@ -22,7 +22,7 @@ public class SerialCommJssc {
 
     public void writeData(String data) {
         //  SerialPort serialPort = new SerialPort("/dev/ttyUSB3");
-        SerialPort serialPort = new SerialPort("/dev/ttyACM0");
+        SerialPort serialPort = new SerialPort("/dev/ttyUSB1");
         try {
             serialPort.openPort();//Open serial port
             serialPort.setParams(SerialPort.BAUDRATE_9600,
@@ -38,7 +38,7 @@ public class SerialCommJssc {
 
     public String readData(int nbBytes) {
 //      SerialPort serialPort = new SerialPort("/dev/ttyUSB3");
-        SerialPort serialPort = new SerialPort("/dev/ttyACM0");
+        SerialPort serialPort = new SerialPort("/dev/ttyUSB1");
         try {
             serialPort.openPort();//Open serial port
             serialPort.setParams(9600, 8, 1, 0);//Set params.
